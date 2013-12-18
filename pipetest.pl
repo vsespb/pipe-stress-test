@@ -70,6 +70,9 @@ my $data;
 close $fh or die $!;
 
 print "PARENT PID $$\n";
+print "Digest::MD5 version $Digest::MD5::VERSION\n";
+print "IO::Pipe version $IO::Pipe::VERSION\n";
+print "perl version $]\n";
 
 my $data_len = length($data);
 my $data_md5 = md5_hex($data);
