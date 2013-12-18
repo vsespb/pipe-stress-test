@@ -70,10 +70,13 @@ my $data;
 close $fh or die $!;
 
 print "PARENT PID $$\n";
-print "data length: ".length($data)."\n";
-print "data md5: ".md5_hex($data)."\n";
 
 my $data_len = length($data);
+my $data_md5 = md5_hex($data);
+
+print "data length: ".$data_len."\n";
+print "data md5: ".$data_md5."\n";
+
 
 my $ppid = $$;
 
@@ -88,11 +91,13 @@ if ($pid) { # parent
 	binmode $pp;
 
 	while (1) {
+		print "$$ parent - loop begin\n";
 		print "$$ parent - syswritefull - writing $data_len bytes\n";
 		my $res = syswritefull($pp, $data);
+		die if md5_hex($data) ne $data_md5;
 		die if $res != $data_len;
 		print "$$ parent - syswritefull - wrote $res bytes\n";
-#		sleep 1;
+		print "$$ parent - loop end\n";
 	}
 
 } elsif (defined $pid) { # child
@@ -111,25 +116,19 @@ if ($pid) { # parent
 		print "$$ child - sysreadfull - read $res bytes\n";
 		die if $res != $data_len;
 
-		print "$$ child - md5 of received data: ".md5_hex($data_child)."\n";
 		my $ok = $data_child eq $data;
 		print "$$ child - data matches original: ".($ok ? 'YES' : 'NO')."\n";
 		die unless $ok;
+
+		my $data_md5_child = md5_hex($data_child);
+		my $md5_ok = $data_md5_child eq $data_md5;
+
+		print "$$ child - md5 of received data: ".$data_md5_child." (matches original: ".($md5_ok ? 'YES' : 'NO' ).")\n";
 		print "$$ child - loop end\n";
 	}
 } else {
 	die "fork error $!";
 }
 
-
-
-
-
-
-
-
-
-
-
-
+__END__
 
